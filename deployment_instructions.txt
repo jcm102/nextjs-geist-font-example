@@ -1,0 +1,119 @@
+Deployment Guide for Scheduling Application
+
+1. Server Setup (Debian/Ubuntu recommended):
+-------------------------------------------
+# Update system
+apt update && apt upgrade -y
+
+# Install required dependencies
+apt install -y git curl nodejs npm
+
+# Install Node.js 20 (required for Next.js 14+)
+curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
+apt install -y nodejs
+
+# Verify installations
+node --version  # Should be 20.x
+npm --version   # Should be 9.x or higher
+
+
+2. GitHub Setup:
+----------------
+- Create a new repository on GitHub
+- Initialize git and push the current code:
+  git init
+  git add .
+  git commit -m "Initial commit"
+  git branch -M main
+  git remote add origin your-github-repo-url
+  git push -u origin main
+
+
+3. Server Deployment:
+---------------------
+# Clone the repository
+git clone your-github-repo-url
+cd your-repo-name
+
+# Install dependencies
+npm install
+
+# Create environment file
+cp .env.example .env
+# Edit .env with your settings (auth secrets, API keys, etc)
+
+# Build the application
+npm run build
+
+# Install PM2 for process management
+npm install -g pm2
+
+# Start the application
+pm2 start npm --name "scheduling-app" -- start
+
+
+4. Nginx Setup (recommended for production):
+--------------------------------------------
+# Install Nginx
+apt install -y nginx
+
+# Create Nginx configuration
+cat > /etc/nginx/sites-available/scheduling-app << 'EOL'
+server {
+    listen 80;
+    server_name your-domain.com;
+
+    location / {
+        proxy_pass http://localhost:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+    }
+}
+EOL
+
+# Enable the site
+ln -s /etc/nginx/sites-available/scheduling-app /etc/nginx/sites-enabled/
+nginx -t
+systemctl restart nginx
+
+
+5. SSL Setup (optional but recommended):
+----------------------------------------
+# Install Certbot
+apt install -y certbot python3-certbot-nginx
+
+# Obtain SSL certificate
+certbot --nginx -d your-domain.com
+
+
+6. Maintenance Commands:
+------------------------
+# Update application
+git pull
+npm install
+npm run build
+pm2 restart scheduling-app
+
+# View logs
+pm2 logs scheduling-app
+
+# Monitor application
+pm2 monit
+
+
+Notes:
+------
+- Replace 'your-github-repo-url' with your actual GitHub repository URL
+- Replace 'your-domain.com' with your actual domain
+- Set up proper environment variables in .env
+- Configure authentication settings if using NextAuth
+- Set up proper firewall rules (allow ports 80, 443, and SSH)
+
+For future updates:
+git pull
+npm install
+npm run build
+pm2 restart scheduling-app
