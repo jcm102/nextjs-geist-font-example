@@ -1,0 +1,8 @@
+{
+  "app/page.tsx -> @/components/SchedulingCalendar": {
+    "id": "app/page.tsx -> @/components/SchedulingCalendar",
+    "files": [
+      "static/chunks/_app-pages-browser_src_components_SchedulingCalendar_tsx.js"
+    ]
+  }
+}
